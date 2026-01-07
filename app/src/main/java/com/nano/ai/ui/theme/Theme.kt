@@ -96,14 +96,16 @@ fun rSp(
 @Composable
 fun NanoAiTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     val context = LocalContext.current
 
-    val colorScheme = if (darkTheme) {
-        dynamicDarkColorScheme(context)
-    } else {
-        dynamicLightColorScheme(context)
+    val colorScheme = when {
+        dynamicColor && darkTheme -> dynamicDarkColorScheme(context)
+        dynamicColor && !darkTheme -> dynamicLightColorScheme(context)
+        darkTheme -> dynamicDarkColorScheme(context) // fallback to dynamic for now
+        else -> dynamicLightColorScheme(context)
     }
 
     // Define typography with Manrope as the base/default family

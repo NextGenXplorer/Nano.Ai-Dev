@@ -27,12 +27,20 @@ android {
         buildConfigField("String", "ALIAS", getProperty("ALIAS"))
     }
 
+    signingConfigs {
+        getByName("debug") {
+            // Uses default debug keystore
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
+            // Sign release with debug key for universal builds
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -71,7 +79,21 @@ dependencies {
     implementation(libs.logging.interceptor)
     implementation(libs.kotlinx.serialization.json)
 
-    //Projects
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+
+    // DataStore
+    implementation(libs.androidx.datastore.preferences)
+
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
+
+    // DocumentFile for SAF
+    implementation(libs.androidx.documentfile)
+
+    // LLM Inference
+    implementation(libs.llama.java)
 
     // Core Android
     implementation(libs.androidx.core.ktx)
