@@ -262,7 +262,7 @@ fun ModelManagerScreen(
                             model = model,
                             isSelected = selectedModel?.id == model.id,
                             isLoaded = inferenceState is InferenceState.Ready &&
-                                    viewModel.getLoadedModelPath() == model.path,
+                                    viewModel.getLoadedModelPath() == model.modelPath,
                             onLoad = { viewModel.loadModel(model) },
                             onSelect = { viewModel.selectModel(model) },
                             onDelete = { showDeleteDialog = model }
@@ -278,7 +278,7 @@ fun ModelManagerScreen(
         AlertDialog(
             onDismissRequest = { showDeleteDialog = null },
             title = { Text("Delete Model") },
-            text = { Text("Are you sure you want to delete \"${model.name}\"? This cannot be undone.") },
+            text = { Text("Are you sure you want to delete \"${model.modelName}\"? This cannot be undone.") },
             confirmButton = {
                 Button(
                     onClick = {
@@ -350,7 +350,7 @@ fun ModelCard(
                     .padding(horizontal = 12.dp)
             ) {
                 Text(
-                    text = model.name,
+                    text = model.modelName,
                     style = MaterialTheme.typography.titleSmall,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -361,12 +361,20 @@ fun ModelCard(
                     color = if (isLoaded) MaterialTheme.colorScheme.primary
                     else MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                // Show file size
-                val file = File(model.path)
-                if (file.exists()) {
-                    val sizeMB = file.length() / (1024 * 1024)
+                // Show file size from model or check file
+                val sizeText = model.fileSize?.let { size ->
+                    val sizeMB = size / (1024 * 1024)
+                    "${sizeMB}MB"
+                } ?: run {
+                    val file = File(model.modelPath)
+                    if (file.exists()) {
+                        val sizeMB = file.length() / (1024 * 1024)
+                        "${sizeMB}MB"
+                    } else null
+                }
+                sizeText?.let {
                     Text(
-                        text = "${sizeMB}MB",
+                        text = it,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
                     )

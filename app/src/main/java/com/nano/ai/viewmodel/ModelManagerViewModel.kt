@@ -71,25 +71,28 @@ class ModelManagerViewModel(
                     onSuccess = { internalPath ->
                         _importState.value = _importState.value.copy(progress = 0.7f)
 
+                        // Get file size
+                        val fileSize = File(internalPath).length()
+
                         // Create model entry
                         val model = Model(
-                            name = fileName.removeSuffix(".gguf"),
+                            modelName = fileName.removeSuffix(".gguf"),
                             providerType = ProviderType.GGUF,
-                            path = internalPath,
-                            pathType = PathType.LOCAL,
+                            modelPath = internalPath,
+                            pathType = PathType.FILE,
+                            fileSize = fileSize,
                             isActive = true
                         )
 
                         modelRepository.insertModel(model)
 
-                        // Create default config
+                        // Create default config (using JSON strings)
+                        val loadingParams = """{"contextLength":4096,"threads":4,"gpuLayers":0}"""
+                        val inferenceParams = """{"temperature":0.7,"topP":0.9,"topK":40,"maxTokens":2048,"repeatPenalty":1.1}"""
                         val config = ModelConfig(
                             modelId = model.id,
-                            temperature = 0.7f,
-                            topP = 0.9f,
-                            topK = 40,
-                            maxTokens = 2048,
-                            repeatPenalty = 1.1f
+                            modelLoadingParams = loadingParams,
+                            modelInferenceParams = inferenceParams
                         )
                         modelRepository.insertConfig(config)
 
@@ -126,7 +129,7 @@ class ModelManagerViewModel(
         viewModelScope.launch {
             val contextLength = settingsRepository.contextLength.first()
             llamaService.loadModel(
-                modelPath = model.path,
+                modelPath = model.modelPath,
                 contextLength = contextLength
             )
             selectModel(model)
@@ -142,7 +145,7 @@ class ModelManagerViewModel(
     fun deleteModel(model: Model) {
         viewModelScope.launch {
             // Delete file
-            llamaService.deleteModel(model.path)
+            llamaService.deleteModel(model.modelPath)
 
             // Delete from database
             modelRepository.deleteModel(model)

@@ -52,13 +52,14 @@ class LlamaService(private val context: Context) {
             }
 
             val params = ModelParameters()
+                .setModelFilePath(modelPath)
                 .setNCtx(contextLength)
                 .setNThreads(threads)
                 .setNGpuLayers(gpuLayers)
 
             _state.value = InferenceState.Loading(modelPath, 0.5f)
 
-            model = LlamaModel(modelPath, params)
+            model = LlamaModel(params)
             currentModelPath = modelPath
 
             _state.value = InferenceState.Ready(modelFile.name)
